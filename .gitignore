@@ -1,0 +1,7 @@
+#senhas, chaves de api
+.env
+#programas compilados
+*.exe
+#lixo do sistema operacional
+.DS_Store
+Thumbs.db
