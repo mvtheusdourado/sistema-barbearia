@@ -9,6 +9,10 @@ import (
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
+
+	"github.com/mvtheusdourado/sistema-barbearia/internal/handlers"
+	"github.com/mvtheusdourado/sistema-barbearia/internal/repository"
+	"github.com/mvtheusdourado/sistema-barbearia/internal/service"
 )
 
 func main() {
@@ -32,11 +36,17 @@ func main() {
 
 	fmt.Println("Conectado ao banco de dados com sucesso!")
 
+	clienteRepository := repository.NewClienteRepository(pool)
+	clienteService := service.NewClienteService(clienteRepository)
+	clienteHandler := handlers.NewClienteHandler(clienteService)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprintln(w, "Olá, Barbearia! O servidor está funcionando.")
 	})
+
+	mux.HandleFunc("GET /clientes", clienteHandler.ListarClientes)
 
 	fmt.Println("Servidor ligado! Acesse: http://localhost:8080/health")
 
