@@ -40,6 +40,10 @@ func main() {
 	clienteService := service.NewClienteService(clienteRepository)
 	clienteHandler := handlers.NewClienteHandler(clienteService)
 
+	agendamentoRepository := repository.NewAgendamentoRepository(pool)
+	agendamentoService := service.NewAgendamentoService(agendamentoRepository)
+	agendamentoHandler := handlers.NewAgendamentoHandler(agendamentoService)
+
 	mux := http.NewServeMux()
 
 	mux.HandleFunc("GET /health", func(w http.ResponseWriter, r *http.Request) {
@@ -47,6 +51,8 @@ func main() {
 	})
 
 	mux.HandleFunc("GET /clientes", clienteHandler.ListarClientes)
+
+	mux.HandleFunc("POST /agendamentos", agendamentoHandler.CriarAgendamento)
 
 	fmt.Println("Servidor ligado! Acesse: http://localhost:8080/health")
 
