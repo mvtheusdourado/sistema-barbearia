@@ -32,3 +32,13 @@ func (s *AgendamentoService) CriarAgendamento(ctx context.Context, ag models.Age
 
 	return s.repo.Criar(ctx, ag)
 }
+func (s *AgendamentoService) CancelarAgendamento(ctx context.Context, id int) error {
+	cancelado, err := s.repo.Cancelar(ctx, id)
+	if err != nil {
+		return err
+	}
+	if !cancelado {
+		return errors.New("agendamento não encontrado")
+	}
+	return nil
+}

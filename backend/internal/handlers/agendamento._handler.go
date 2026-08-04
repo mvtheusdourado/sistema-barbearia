@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"github.com/mvtheusdourado/sistema-barbearia/internal/models"
 	"github.com/mvtheusdourado/sistema-barbearia/internal/service"
@@ -34,4 +35,20 @@ func (h *AgendamentoHandler) CriarAgendamento(w http.ResponseWriter, r *http.Req
 	w.WriteHeader(http.StatusCreated)
 
 	json.NewEncoder(w).Encode(map[string]string{"mensagem": "Agendamento criado com sucesso!"})
+}
+func (h *AgendamentoHandler) CancelarAgendamento(w http.ResponseWriter, r *http.Request) {
+	idStr := r.PathValue("id")
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		http.Error(w, "ID inválido", http.StatusBadRequest)
+		return
+	}
+
+	err = h.service.CancelarAgendamento(r.Context(), id)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	json.NewEncoder(w).Encode(map[string]string{"mensagem": "Agendamento cancelado com sucesso!"})
 }
