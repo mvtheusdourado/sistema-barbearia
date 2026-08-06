@@ -33,3 +33,22 @@ func (r *AgendamentoRepository) Cancelar(ctx context.Context, id int) (bool, err
 	}
 	return tag.RowsAffected() > 0, nil
 }
+func (r *AgendamentoRepository) HorariosOcupados(ctx context.Context, barbeiroID int, dia time.Time) ([]time.Time, error) {
+	linhas, err := r.db.Query(ctx,
+		"SELECT data_hora FROM agendamentos WHERE barbeiro_id = $1 AND status = 'agendado' AND data_hora::date = $2::date", barbeiroID, dia)
+	if err != nil {
+		return nil, err
+	}
+	defer linhas.Close()
+
+	var horarios []time.Time
+	for linhas.Next() {
+		var h time.Time
+		err := linhas.Scan(&h)
+		if err != nil {
+			return nil, err
+		}
+		horarios = append(horarios, h)
+	}
+	return horarios, nil
+}
