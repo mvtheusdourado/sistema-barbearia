@@ -56,6 +56,8 @@ func main() {
 
 	mux.HandleFunc("PATCH /agendamentos/{id}/cancelar", agendamentoHandler.CancelarAgendamento)
 
+	mux.HandleFunc("GET /barbeiros/{id}/horarios", agendamentoHandler.ListarHorariosDisponiveis)
+
 	fmt.Println("Servidor ligado! Acesse: http://localhost:8080/health")
 
 	http.ListenAndServe(":8080", mux)

@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/mvtheusdourado/sistema-barbearia/internal/models"
@@ -41,4 +42,23 @@ func (s *AgendamentoService) CancelarAgendamento(ctx context.Context, id int) er
 		return errors.New("agendamento não encontrado")
 	}
 	return nil
+}
+func (s *AgendamentoService) ListarHorariosDisponiveis(ctx context.Context, barbeiroID int, dia time.Time) ([]string, error) {
+	ocupados, err := s.repo.HorariosOcupados(ctx, barbeiroID, dia)
+	if err != nil {
+		return nil, err
+	}
+
+	horasOcupadas := make(map[int]bool)
+	for _, o := range ocupados {
+		horasOcupadas[o.Hour()] = true
+	}
+
+	var disponiveis []string
+	for hora := 9; hora < 18; hora++ {
+		if !horasOcupadas[hora] {
+			disponiveis = append(disponiveis, fmt.Sprintf("%02d:00", hora))
+		}
+	}
+	return disponiveis, nil
 }

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/mvtheusdourado/sistema-barbearia/internal/models"
 	"github.com/mvtheusdourado/sistema-barbearia/internal/service"
@@ -51,4 +52,27 @@ func (h *AgendamentoHandler) CancelarAgendamento(w http.ResponseWriter, r *http.
 	}
 
 	json.NewEncoder(w).Encode(map[string]string{"mensagem": "Agendamento cancelado com sucesso!"})
+}
+func (h *AgendamentoHandler) ListarHorariosDisponiveis(w http.ResponseWriter, r *http.Request) {
+	barbeiroID, err := strconv.Atoi(r.PathValue(("id")))
+	if err != nil {
+		http.Error(w, "ID do barbeiro inválido", http.StatusBadRequest)
+		return
+	}
+
+	dataStr := r.URL.Query().Get("data")
+	dia, err := time.Parse("2006-01-02", dataStr)
+	if err != nil {
+		http.Error(w, "Data inválida (use o formato AAAA-MM-DD)", http.StatusBadRequest)
+		return
+	}
+
+	disponiveis, err := h.service.ListarHorariosDisponiveis(r.Context(), barbeiroID, dia)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(disponiveis)
 }
