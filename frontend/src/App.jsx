@@ -6,6 +6,12 @@ function App() {
   const [data, setData] = useState('')
   const [horarios, setHorarios] = useState([])
   const [buscou, setBuscou] = useState(false)
+  const [toast, setToast] = useState(null)
+
+  function mostrarToast(texto, tipo) {
+    setToast({ texto, tipo })
+    setTimeout(() => setToast(null), 3000)
+  }
 
   function buscarHorarios() {
     fetch(`http://localhost:8080/barbeiros/${barbeiroID}/horarios?data=${data}`)
@@ -24,17 +30,23 @@ function App() {
         data_hora: dataHora,
       }),
     }).then((r) => {
-      if (r.ok) buscarHorarios()
-      else alert('Não foi possível agendar esse horário.')
+      if (r.ok) {
+        mostrarToast('Horário agendado com sucesso! ✅', 'sucesso')
+        buscarHorarios()
+      } else {
+        mostrarToast('Não foi possível agendar esse horário. 😕', 'erro')
+      }
     })
   }
 
   return (
     <div className="page">
+      {toast && <div className={`toast toast-${toast.tipo}`}>{toast.texto}</div>}
+
       <div className="card">
         <header className="header">
           <span className="logo">💈</span>
-          <h1>Barbearia do Matheus</h1>
+          <h1>Barbearia Dourado</h1>
           <p className="subtitle">Agende seu horário</p>
         </header>
 
