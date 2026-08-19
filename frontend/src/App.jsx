@@ -7,16 +7,24 @@ function App() {
   const [horarios, setHorarios] = useState([])
   const [buscou, setBuscou] = useState(false)
   const [toast, setToast] = useState(null)
+  const [agendamentos, setAgendamentos] = useState([])
 
   function mostrarToast(texto, tipo) {
     setToast({ texto, tipo })
     setTimeout(() => setToast(null), 3000)
   }
 
+  function buscarAgendamentos() {
+    fetch(`http://localhost:8080/agendamentos?cliente_id=${clienteID}`)
+      .then((r) => r.json())
+      .then((dados) => setAgendamentos(dados))
+  }
+
   function buscarHorarios() {
     fetch(`http://localhost:8080/barbeiros/${barbeiroID}/horarios?data=${data}`)
       .then((r) => r.json())
       .then((dados) => { setHorarios(dados); setBuscou(true) })
+    buscarAgendamentos()
   }
 
   function agendar(hora) {
@@ -33,10 +41,24 @@ function App() {
       if (r.ok) {
         mostrarToast('Horário agendado com sucesso! ✅', 'sucesso')
         buscarHorarios()
+        buscarAgendamentos()
       } else {
         mostrarToast('Não foi possível agendar esse horário. 😕', 'erro')
       }
     })
+  }
+
+  function cancelar(id) {
+    fetch(`http://localhost:8080/agendamentos/${id}/cancelar`, { method: 'PATCH' })
+      .then((r) => {
+        if (r.ok) {
+          mostrarToast('Agendamento cancelado.', 'sucesso')
+          buscarAgendamentos()
+          buscarHorarios()
+        } else {
+          mostrarToast('Não foi possível cancelar.', 'erro')
+        }
+      })
   }
 
   return (
@@ -82,6 +104,25 @@ function App() {
             )}
           </div>
         )}
+
+        <div className="lista">
+          <h3>Agendamentos</h3>
+          {agendamentos.length === 0 ? (
+            <p className="vazio">Nenhum agendamento ainda.</p>
+          ) : (
+            agendamentos.map((ag) => (
+              <div key={ag.id} className="agendamento">
+                <span>
+                  #{ag.id} · barbeiro {ag.barbeiro_id} · {ag.data_hora.slice(0, 16).replace('T', ' ')}
+                  <span className={`tag tag-${ag.status}`}>{ag.status}</span>
+                </span>
+                {ag.status === 'agendado' && (
+                  <button className="btn-cancelar" onClick={() => cancelar(ag.id)}>Cancelar</button>
+                )}
+              </div>
+            ))
+          )}
+        </div>
       </div>
     </div>
   )

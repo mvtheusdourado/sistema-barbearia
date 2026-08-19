@@ -52,3 +52,21 @@ func (r *AgendamentoRepository) HorariosOcupados(ctx context.Context, barbeiroID
 	}
 	return horarios, nil
 }
+func (r *AgendamentoRepository) ListarPorCliente(ctx context.Context, clienteID int) ([]models.Agendamento, error) {
+	linhas, err := r.db.Query(ctx, "SELECT id, cliente_id, barbeiro_id, data_hora, status FROM agendamentos WHERE cliente_id = $1 ORDER BY data_hora", clienteID)
+	if err != nil {
+		return nil, err
+	}
+	defer linhas.Close()
+
+	agendamentos := []models.Agendamento{}
+	for linhas.Next() {
+		var a models.Agendamento
+		err := linhas.Scan(&a.ID, &a.ClienteID, &a.BarbeiroID, &a.DataHora, &a.Status)
+		if err != nil {
+			return nil, err
+		}
+		agendamentos = append(agendamentos, a)
+	}
+	return agendamentos, nil
+}

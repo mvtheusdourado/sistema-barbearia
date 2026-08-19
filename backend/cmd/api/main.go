@@ -58,6 +58,8 @@ func main() {
 
 	mux.HandleFunc("GET /barbeiros/{id}/horarios", agendamentoHandler.ListarHorariosDisponiveis)
 
+	mux.HandleFunc("GET /agendamentos", agendamentoHandler.ListarAgendamentos)
+
 	fmt.Println("Servidor ligado! Acesse: http://localhost:8080/health")
 
 	http.ListenAndServe(":8080", comCORS(mux))

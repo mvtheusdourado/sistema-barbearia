@@ -76,3 +76,18 @@ func (h *AgendamentoHandler) ListarHorariosDisponiveis(w http.ResponseWriter, r 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(disponiveis)
 }
+func (h *AgendamentoHandler) ListarAgendamentos(w http.ResponseWriter, r *http.Request) {
+	clienteID, err := strconv.Atoi(r.URL.Query().Get("cliente_id"))
+	if err != nil {
+		http.Error(w, "cliente_id inválido", http.StatusBadRequest)
+		return
+	}
+
+	agendamentos, err := h.service.ListarAgendamentos(r.Context(), clienteID)
+	if err != nil {
+		http.Error(w, "Erro ao buscar agendamentos", http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(agendamentos)
+}

@@ -54,11 +54,14 @@ func (s *AgendamentoService) ListarHorariosDisponiveis(ctx context.Context, barb
 		horasOcupadas[o.Hour()] = true
 	}
 
-	var disponiveis []string
+	disponiveis := []string{}
 	for hora := 9; hora < 18; hora++ {
 		if !horasOcupadas[hora] {
 			disponiveis = append(disponiveis, fmt.Sprintf("%02d:00", hora))
 		}
 	}
 	return disponiveis, nil
+}
+func (s *AgendamentoService) ListarAgendamentos(ctx context.Context, clienteID int) ([]models.Agendamento, error) {
+	return s.repo.ListarPorCliente(ctx, clienteID)
 }
