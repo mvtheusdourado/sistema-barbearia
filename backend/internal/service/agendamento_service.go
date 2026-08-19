@@ -7,19 +7,25 @@ import (
 	"time"
 
 	"github.com/mvtheusdourado/sistema-barbearia/internal/models"
-	"github.com/mvtheusdourado/sistema-barbearia/internal/repository"
 )
 
+type AgendamentoRepositorio interface {
+	Criar(ctx context.Context, ag models.Agendamento) error
+	ExisteHorarioOcupado(ctx context.Context, barbeiroID int, dataHora time.Time) (bool, error)
+	Cancelar(ctx context.Context, id int) (bool, error)
+	HorariosOcupados(ctx context.Context, barbeiroID int, dia time.Time) ([]time.Time, error)
+	ListarPorCliente(ctx context.Context, clienteID int) ([]models.Agendamento, error)
+}
 type AgendamentoService struct {
-	repo *repository.AgendamentoRepository
+	repo AgendamentoRepositorio
 }
 
-func NewAgendamentoService(repo *repository.AgendamentoRepository) *AgendamentoService {
+func NewAgendamentoService(repo AgendamentoRepositorio) *AgendamentoService {
 	return &AgendamentoService{repo: repo}
 }
 
 func (s *AgendamentoService) CriarAgendamento(ctx context.Context, ag models.Agendamento) error {
-	if ag.DataHora.Before(time.Now()) {
+	if estaNoPassado(ag.DataHora) {
 		return errors.New("não é possível agendar em uma data no passado")
 	}
 
@@ -48,20 +54,24 @@ func (s *AgendamentoService) ListarHorariosDisponiveis(ctx context.Context, barb
 	if err != nil {
 		return nil, err
 	}
-
+	return calcularHorariosDisponiveis(ocupados), nil
+}
+func (s *AgendamentoService) ListarAgendamentos(ctx context.Context, clienteID int) ([]models.Agendamento, error) {
+	return s.repo.ListarPorCliente(ctx, clienteID)
+}
+func estaNoPassado(dataHora time.Time) bool {
+	return dataHora.Before(time.Now())
+}
+func calcularHorariosDisponiveis(ocupados []time.Time) []string {
 	horasOcupadas := make(map[int]bool)
 	for _, o := range ocupados {
 		horasOcupadas[o.Hour()] = true
 	}
-
 	disponiveis := []string{}
 	for hora := 9; hora < 18; hora++ {
 		if !horasOcupadas[hora] {
 			disponiveis = append(disponiveis, fmt.Sprintf("%02d:00", hora))
 		}
 	}
-	return disponiveis, nil
-}
-func (s *AgendamentoService) ListarAgendamentos(ctx context.Context, clienteID int) ([]models.Agendamento, error) {
-	return s.repo.ListarPorCliente(ctx, clienteID)
+	return disponiveis
 }
