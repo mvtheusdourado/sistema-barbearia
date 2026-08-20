@@ -61,9 +61,14 @@ func main() {
 
 	mux.HandleFunc("GET /agendamentos", agendamentoHandler.ListarAgendamentos)
 
-	log.Println("Servidor ligado! Acesse: http://localhost:8080/health")
+	porta := os.Getenv("PORT")
+	if porta == "" {
+		porta = "8080"
+	}
 
-	http.ListenAndServe(":8080", comLog(comCORS(mux)))
+	log.Println("Servidor ligado na porta " + porta)
+
+	http.ListenAndServe(":"+porta, comLog(comCORS(mux)))
 }
 func comCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

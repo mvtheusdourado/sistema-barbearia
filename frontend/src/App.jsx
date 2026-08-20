@@ -1,5 +1,7 @@
 import { useState } from 'react'
 
+const API = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+
 function App() {
   const [clienteID, setClienteID] = useState('')
   const [barbeiroID, setBarbeiroID] = useState('')
@@ -15,13 +17,13 @@ function App() {
   }
 
   function buscarAgendamentos() {
-    fetch(`http://localhost:8080/agendamentos?cliente_id=${clienteID}`)
+    fetch(`${API}/agendamentos?cliente_id=${clienteID}`)
       .then((r) => r.json())
       .then((dados) => setAgendamentos(dados))
   }
 
   function buscarHorarios() {
-    fetch(`http://localhost:8080/barbeiros/${barbeiroID}/horarios?data=${data}`)
+    fetch(`${API}/barbeiros/${barbeiroID}/horarios?data=${data}`)
       .then((r) => r.json())
       .then((dados) => { setHorarios(dados); setBuscou(true) })
     buscarAgendamentos()
@@ -29,7 +31,7 @@ function App() {
 
   function agendar(hora) {
     const dataHora = `${data}T${hora}:00Z`
-    fetch('http://localhost:8080/agendamentos', {
+    fetch(`${API}/agendamentos`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -49,7 +51,7 @@ function App() {
   }
 
   function cancelar(id) {
-    fetch(`http://localhost:8080/agendamentos/${id}/cancelar`, { method: 'PATCH' })
+    fetch(`${API}/agendamentos/${id}/cancelar`, { method: 'PATCH' })
       .then((r) => {
         if (r.ok) {
           mostrarToast('Agendamento cancelado.', 'sucesso')
