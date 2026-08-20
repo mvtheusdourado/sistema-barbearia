@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
@@ -34,7 +35,7 @@ func main() {
 		log.Fatal("O banco não respondeu ao ping: ", err)
 	}
 
-	fmt.Println("Conectado ao banco de dados com sucesso!")
+	log.Println("✅ Conectado ao banco de dados com sucesso!")
 
 	clienteRepository := repository.NewClienteRepository(pool)
 	clienteService := service.NewClienteService(clienteRepository)
@@ -60,9 +61,9 @@ func main() {
 
 	mux.HandleFunc("GET /agendamentos", agendamentoHandler.ListarAgendamentos)
 
-	fmt.Println("Servidor ligado! Acesse: http://localhost:8080/health")
+	log.Println("Servidor ligado! Acesse: http://localhost:8080/health")
 
-	http.ListenAndServe(":8080", comCORS(mux))
+	http.ListenAndServe(":8080", comLog(comCORS(mux)))
 }
 func comCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -76,5 +77,12 @@ func comCORS(next http.Handler) http.Handler {
 		}
 
 		next.ServeHTTP(w, r)
+	})
+}
+func comLog(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		inicio := time.Now()
+		next.ServeHTTP(w, r)
+		log.Printf("%s %s — levou %v", r.Method, r.URL.Path, time.Since(inicio))
 	})
 }
